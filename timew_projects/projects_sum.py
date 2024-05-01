@@ -31,14 +31,16 @@ class ProjectNode():
     _time = 0
     _id = ""
 
-    def __init__(self,name: str, parent_name: str = "") -> None:
+    def __init__(self,name: str, ancestors: list = []) -> None:
         self._name = name
-        self._parent = parent_name
-        self._id = self._generate_id(name, parent_name)
+        self._parent = ancestors[0] if 1 <= len(ancestors) else ""
+        self._id = self._generate_id(name, ancestors)
     
-    def _generate_id(self, node_name, parent_name):
-        combined_string = node_name + parent_name
-        
+    def _generate_id(self, node_name, ancestors):
+        combined_string = node_name
+        for ancestor in ancestors:
+            combined_string += ancestor
+       
         # Hash the combined string using SHA-256
         hash_object = hashlib.sha256(combined_string.encode())
         
@@ -135,7 +137,7 @@ def _structure_activities(data):
 def create_nodes_from_tags(tags, nodes, time):
     # Precautions if interval is not tagged
     node_name = "untagged" if 0 == len(tags) else tags.pop()
-    node = ProjectNode(node_name, "" if 0 == len(tags) else tags[-1])
+    node = ProjectNode(node_name, tags)
     
     if not node._id in nodes.keys():
         nodes.update({node._id: node})
